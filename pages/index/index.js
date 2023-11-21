@@ -3,6 +3,8 @@
 //引入SDK
 var Bmob = require('../../utils/bmob.js');
 var app=getApp();
+const db = wx.cloud.database();
+
 Page({
 
   /**
@@ -82,29 +84,53 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad: function (options) {
-
+    // this.addNewData();
     this.getswitchimg();
-   this.qbzwLoad();
+    this.qbzwLoad();
   },
+
+
+  // 云开发手动写入记录无法生成_openid，会出现无法读取的情况（因为权限的问题）
+  // 改成编程写入就可以生成了
+  addNewData:function(){
+
+    db.collection('img').add({
+      // data 字段表示需新增的 JSON 数据
+      data: {
+        // _id: 'todo-identifiant-aleatoire', // 可选自定义 _id，在此处场景下用数据库自动分配的就可以了
+        swiperImgSrc: "https://www.bing.com/images/search?view=detailV2&ccid=Md86Wi2E&id=94E5B2B0F268680EDC09B59CFF9383E54D3A41EC&thid=OIP.Md86Wi2EYiKHNPldRZiD4gHaEo&mediaurl=https%3a%2f%2fth.bing.com%2fth%2fid%2fR.31df3a5a2d8462228734f95d459883e2%3frik%3d7EE6TeWDk%252f%252bctQ%26riu%3dhttp%253a%252f%252fwww.quazero.com%252fuploads%252fallimg%252f140303%252f1-140303214331.jpg%26ehk%3dSpI7mz%252byLqOkT8BL79jcd3iCtQYNFlBHQzbtF1p0vuQ%253d%26risl%3d%26pid%3dImgRaw%26r%3d0&exph=1050&expw=1680&q=%e5%9b%be%e7%89%87&simid=608003267605717483&FORM=IRPRST&ck=05FC30022211F46A8B3E3FE8E8D3E082&selectedIndex=4",
+        // due: new Date("2018-09-01"),
+        // tags: [
+        //   "cloud",
+        //   "database"
+        // ],
+        // // 为待办事项添加一个地理位置（113°E，23°N）
+        // location: new db.Geo.Point(113, 23),
+        // done: false
+      },
+      success: function(res) {
+        // res 是一个对象，其中有 _id 字段标记刚创建的记录的 id
+        console.log(res)
+      }
+    })
+
+  },
+
+
   //加载轮播图
   getswitchimg:function(){
     var that=this;
-    var Diary = Bmob.Object.extend("SwiperImgSrc");
-    var query = new Bmob.Query(Diary);
-    // 查询所有数据
-    query.find({
-      success: function (results) {
-        //console.log("轮播图共查询到 " + results.length + " 条记录");
+
+    db.collection('img').get({
+      success: function(res) {
         that.setData({
-          imgUrls: results
+          imgUrls: res.data
         });
-      },
-      error: function (error) {
-        //console.log("查询失败: " + error.code + " " + error.message);
+        console.log(res.data);
       }
     });
   },
-//分页加载
+  //分页加载
   loadArticle: function () {
     ////console.log('分页传值:' + this.data.currentTab);
     var that = this;
@@ -170,7 +196,6 @@ Page({
  
     });
 },
-
   /**
    * 页面上拉触底事件的处理函数
    */
